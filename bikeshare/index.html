@@ -1,0 +1,751 @@
+<!DOCTYPE html> 
+    <html> 
+        <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1"> 
+            <title>GTA Bikeshare</title> 
+            
+           
+            <style>
+            
+                h1 {
+                    font-family: 'Arial Narrow', Arial, sans-serif;
+                    font-size: 240%;      
+                    font-weight: 600;
+                    margin: 0px;
+                    line-height: 95%;
+                }    
+                
+            table {
+                <!--border:0px solid black;-->
+                border-collapse: collapse;
+                width: 100%;
+                margin-left: auto;
+                margin-right: auto;
+                text-align: left;
+            }	
+
+            th, td {
+                height:40px;
+                padding: 10px;
+            }
+
+            tr:nth-child(even) {
+                background-color: #DCF0F7;
+            }
+            tr:nth-child(odd) {
+                background-color:white;
+            }
+
+
+            .statussignal{
+                visibility: collapse; 
+                border-collapse: 
+            }
+           
+             @media (max-width: 600px){
+                    .reportheadings{
+                        transform: rotate(90deg);
+                        transform-origin: left top 0;
+                        margin-left: 50%;
+                        margin-bottom: 25%;
+                    }
+                    
+                    .dockcolumn, .statustext{
+                        display: none;
+                        border-collapse: collapse;
+                    }
+                    .statussignal{
+                        visibility: visible;
+                        column-width: auto;
+                    }
+        
+                
+            }
+                
+                
+                @media (min-width: 550px) {
+                    
+                    #bikeChart {
+                        width: 250px;
+                        height: auto;
+                        position: relative;
+                        margin-left: 25%;
+                        margin-right: auto;
+                        margin-top: 0px;
+                        float: left;
+                    }
+                
+                    #custChart  {
+                        width: 250px;
+                        height: auto;
+                        position: relative;
+                        margin-left: auto;
+                        margin-right: 25%;  
+                        margin-top: 0px;
+                        float: right;
+
+                    }
+                    
+                    #homeContent {
+                        max-width: 600px;
+                        margin-left: auto;
+                        margin-right: auto;
+                        margin-top: 10px;
+                        position: relative;
+                    }
+                    
+                    #mainButtons {
+                        clear:both;
+                        margin-top: 20px;
+                    }
+                    
+                
+                }
+
+                #bikeStationResults {min-width: 290px; height: auto; margin-left: auto; margin-right: auto;}
+                #map_canvas, #allmaps {min-height: 300px; min-width: 290px; max-width: 700px; max-height: 300px; padding: 0; margin: 5px auto 5px auto;}
+                #stationList {margin-left: auto; margin-right: auto; display: block; max-width: 700px; background-image: url(img/bike-icon-old.png); background-repeat: no-repeat; background-position:right; background-position-y:top;} 
+                #station {margin: 0px auto 10px auto; text-align:center} 
+                #stationInfo {min-width: 290px; max-width: 700px;}
+                
+                td#col-left {width: 40%;}
+                td#col-right {width: 60%}
+                
+          
+                #reportInfo {min-width:280px;font-size: 11px}
+                #reportListView, #reportView { max-width: 700px; margin-left: auto; margin-right: auto;}
+                
+                #reportHeader {background-image: url(img/bike-icon-old.png); background-repeat: no-repeat; background-position:right; background-position-y:top; min-height: 100px;}
+                #home-header img {
+                    height: 100%;
+                    width: 100%;
+                }
+                
+                #home-header {
+                    width: 100%;
+                }
+                
+            
+                #mainButton {
+                    width: 190px;
+                    padding: 5px;
+                    margin-right: auto;
+                    margin-left: auto;
+                    position: relative;
+                    display: block;
+                    clear:both;
+                }
+                
+                #mainButton a {
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+                
+                #myCanvas {
+                    <!-- background-image: url('bike-icon-null.png'); --> 
+                    background-size: 150px 150px; 
+                    background-repeat: no-repeat; 
+                    background-position: center;
+                    position: relative;
+                    display: block;
+                    margin-left: auto;
+                    margin-right: auto;
+                    
+                }
+                
+                #bikeChart {
+                    width: 250px;
+                    height: auto;
+                    position: relative;
+                    margin-left: auto;
+                    margin-right: auto;  
+                    margin-bottom: 15px;
+
+                }
+                
+                #custChart  {
+                    width: 250px;
+                    height: auto;
+                    position: relative;
+                    margin-left: auto;
+                    margin-right: auto;  
+                    margin-top: 20x;
+
+                }
+                
+
+                
+                #bikeChart h2 {
+                    font-family: 'Arial Narrow', Arial, sans-serif;
+                    font-size: 160%;
+                    color: #9CFF00;
+                    text-align: center;
+                    font-weight: 600;
+                    line-height: 120%;
+                }
+                
+                #custChart h1 {
+                    font-family: 'Arial Narrow', Arial, sans-serif;
+                    font-size: 160%;
+                    text-align: center;
+                    font-weight: 600;
+                    margin: 0px;
+                    line-height: 120%;
+                }
+                
+                
+                
+                
+                  </style>
+        </head>
+        <body>
+            
+           
+            <div data-role="page" id="homepage" data-theme="b" class="ui-responsive-panel">         
+                <div data-role="panel" data-position="left" data-position-fixed="true" data-display="overlay" id="nav-panel" data-theme="a">
+					<ul data-role="listview">
+						<li data-icon="delete">
+							<a href="#" data-rel="close">Close menu</a>
+						</li>
+                        <li data-icon="home" >
+							<a href="index.html" data-ajax="false">Homepage</a>
+						</li>
+						<li data-filtertext="Locations" >
+							<a href="#bikeStationList">Locations</a>
+						</li>
+                        <li data-filtertext="Reports" >
+							<a href="#reportList" id="goToReport">Reports</a>
+						</li>
+                        <li data-filtertext="City Map">
+							<a href="#cityMap" >City Map</a>
+						</li>
+                    </ul>
+                </div>
+                
+                <div data-role="header">
+                    <a href="#nav-panel" data-icon="bars" data-iconpos="notext">Menu</a> 
+                    <h1>BIKESHARE</h1>          
+                </div>
+
+     
+                <div data-role="content" id="home-content">
+                   
+                     <div><img src="img/bike_desk.png"  id="home-header"/></div>
+                   <div id="homeContent"> 
+                    <h1>Welcome to BikeShare</h1>
+                    <p>Join the city's fastest growing bike sharing program. You can find BikeShare Docks throughout the GTA
+                        to help you get from point A to point B in a flash! For your convenience, we will be introducing an
+                        app which will allow you to pay for an top up your BikeShare rental straight from your smartphone. So what are you waiting for? Let's hit the road!</p>
+                    
+                    <div id="bikeChart"><canvas id="myCanvas" width="200" height="200">
+                        Your browser does not support the HTML5 canvas tag.</canvas>
+                        <h2>Bikes Currently Available</h2>
+                    </div>
+                    <div id="custChart">
+                        <img src="img/cyclist-crop.png"/>
+                        <div id="custNumbers"></div>
+                        
+                    </div>
+                    </div>
+                   <div id="mainButton">
+                       <a href="#cityMap" data-role="button" data-theme="b" data-ajax="false">Find a Bike</a>
+                    </div>
+
+                </div>
+            
+            </div>
+            
+            <!-- LOCATION LIST -->
+            <div data-role="page" id="bikeStationList" class="ui-responsive-panel">
+                <div data-role="panel" data-position="left" data-position-fixed="true" data-display="overlay" id="nav-panel" data-theme="a">
+					<ul data-role="listview">
+						<li data-icon="delete">
+							<a href="#" data-rel="close">Close menu</a>
+						</li>
+                        <li data-icon="home">
+							<a href="index.html" data-ajax="false">Homepage</a>
+						</li>
+						<li data-filtertext="Locations">
+							<a href="#">Locations</a>
+						</li>
+                        <li data-filtertext="Reports">
+							<a href="#reportList" id="goToReport">Reports</a>
+						</li>
+                        <li data-filtertext="City Map">
+							<a href="#cityMap"  data-ajax="false">City Map</a>
+						</li>
+                    </ul>
+                </div>
+
+                <div data-role="header" data-theme="b">
+                    <a href="#nav-panel" data-icon="bars" data-iconpos="notext">Menu</a> 
+                    <h1>BIKESHARE</h1>
+                </div>
+                 
+                
+                <div data-role="content">
+                    <div id="stationList">
+                        <h1>BikeShare<br>Locations</h1>
+                        <p>View all available BikeShare locations below. You will be able to view how many bikes are available
+                            to take. You can also drop off your BikeShare bike at any of our locations as well! Just look to
+                            see how many available docks there are.
+                        </p>
+                        
+                    <ul id="bikeStation-list" data-role="listview" data-inset="true" data-filter="true">
+                    </ul>
+                    </div>
+                </div>
+                
+            </div>
+           
+            
+            
+            
+            <!-- LOCATION INFORMATION -->
+            <div data-role="page" id="stationInfoPage" data-url="map-page">
+                <div data-role="header" data-theme="b">
+                    <a href="#bikeStationList" data-add-back-btn="true" data-icon="back">Back</a>
+                    <h1>BIKESHARE</h1>
+                </div>
+                <div data-role="content" id="bikeStationResults">
+                    <div id="station"></div>
+                    <div id="map_canvas">Map not supported</div>
+                    <table id="stationInfo" border="0">
+                    </table>
+                    
+                </div>
+            </div>
+            
+         
+            
+            <!--------- REPORT LIST ------>
+            <div data-role="page" id="reportList" class="ui-responsive-panel">  
+
+                <div data-role="panel" data-position="left" data-position-fixed="true" data-display="overlay" id="nav-panel" data-theme="a">
+					<ul data-role="listview">
+						<li data-icon="delete">
+							<a href="#" data-rel="close">Close menu</a>
+						</li>
+                        <li data-icon="home">
+							<a href="index.html" data-ajax="false">Homepage</a>
+						</li>
+						<li data-filtertext="">
+							<a href="#bikeStationList" >Locations</a>
+						</li>
+                        <li data-filtertext="Reports">
+							<a href="#" id="goToReport" data-ajax="false">Reports</a>
+						</li>
+                        <li data-filtertext="City Map">
+							<a href="#cityMap" data-ajax="false">City Map</a>
+						</li>
+                    </ul>
+                </div>
+               
+                <div data-role="header" data-theme="b">
+                   <a href="#nav-panel" data-icon="bars" data-iconpos="notext">Menu</a>  
+                   <h1>BIKESHARE</h1>
+                </div>   
+
+                <div data-role="content">
+                    <div id="reportListView">
+                        <div id="reportHeader">
+                            <h1>Reports<br>List</h1>
+                            <p>Bike Share has the ability to </p>
+                            <ul id="reports-list" data-role="listview" data-inset="true">
+                                <li><a href="#reportPage" id="all_locations">All Locations</a></li>
+                            </ul>   
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            
+            
+            <!-- ALL REPORT PAGE --->
+            <div data-role="page" id="reportPage" class="ui-responsive-panel">
+                 <div data-role="header" data-theme="b">
+                    <a href="#reportList" data-add-back-btn="true" data-icon="back">Back</a>
+                    <h1>Reports</h1>
+                </div>
+                <div data-role="content" id="bikeStationResults">
+                   <div id="reportView">
+                        <div id="reportHeader"><h1>All Location<br>Report</h1></div>
+                        <br>
+                        <div id="currentRate"></div>
+                        <br>
+                        <div>
+                            <table id="reportInfo"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+     
+            
+            
+            <!-----ALL MAP PAGE ------>
+            <div data-role="page" id="cityMap">
+                <div data-role="panel" data-position="left" data-position-fixed="true" data-display="overlay" id="nav-panel" data-theme="a">
+					<ul data-role="listview">
+						<li data-icon="delete">
+							<a href="#" data-rel="close">Close menu</a>
+						</li>
+                        <li data-icon="home">
+							<a href="index.html" data-ajax="false">Homepage</a>
+						</li>
+						<li data-filtertext="">
+							<a href="#bikeStationList" data-ajax="false">Locations</a>
+						</li>
+                        <li data-filtertext="Reports">
+							<a href="#reportList" id="goToReport">Reports</a>
+						</li>
+                        <li data-filtertext="City Map">
+							<a href="#"  >City Map</a>
+						</li>
+                    </ul>
+                </div>
+                 <div data-role="header" data-theme="b">
+                     <a href="#nav-panel" data-icon="bars" data-iconpos="notext">Menu</a>  
+                     <h1>BIKESHARE</h1>
+                </div>
+                <div data-role="content" id="mapResults">
+                   <div id="reportView">
+                       <div id="reportHeader"><h1>BIKESHARE<br>CITY MAP</h1></div>
+                        <div id="allmaps"></div>
+                        <div id="mainButton">
+                            <a href="#bikeStationList" data-role="button" data-theme="b" data-ajax="false">Search Locations</a>
+                            <a href="nearest-location.html" data-role="button" data-theme="b" data-ajax="false">Find Nearest Bike</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+     
+            
+            
+            <!-----LEFT NAV MASTER FOR REFERENCE data-position="left" data-position-fixed="true" data-display="push" 
+            
+            <div data-role="panel" id="nav-panel" data-theme="b" data-display="overlay">
+					<ul data-role="listview" >
+						<li data-icon="delete">
+							<a href="#" data-rel="close">Close menu</a>
+						</li>
+                        <li data-icon="home">
+							<a href="#homepage">Homepage</a>
+						</li>
+						<li data-filtertext="Locations">
+							<a href="#bikeStationList">Locations</a>
+						</li>
+                        <li data-filtertext="Reports">
+							<a href="#reportList" id="goToReport">Reports</a>
+						</li>
+                    </ul>
+                </div> 
+        <!---->
+      </body>      
+            <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+         <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+            <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+            <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBtJzaYIwEGTgyiSOQW3u83cwiwhlzy78w&sensor=false"></script>
+
+            <script>
+              
+                var stationArray = null;
+                var stationIndex = 0;
+                
+                function listBikeStations(data) {
+                    stationArray = data.stationBeanList;
+                    var i = 0;
+                    for(i = 0; i < stationArray.length; i++) {
+                        
+                        var bikeListString = '<li><a href="" data-id="' + i + '">' + stationArray[i].stationName + '</a></li>';
+                      
+                        $("#bikeStation-list").append(bikeListString);
+                    }
+                    $("#bikeStation-list").listview("refresh");
+                }
+                
+  
+                $(document).on("vclick", "#bikeStation-list li a", function() {
+                    stationIndex = $(this).attr('data-id');
+                    $.mobile.changePage("#stationInfoPage", {transition: "flip", changeHash: false});
+                });
+                
+                
+                $(document).on("pagebeforeshow", "#stationInfoPage", function() {
+                    
+                    $("#stationInfo").empty;
+   
+                    $("#station").html('<h2>'+ stationArray[stationIndex].stationName + "<br>(Lot #" + 
+                                       stationArray[stationIndex].id +') </h2>');
+                    var lot_address = '<tr><td id="col-left"><strong>Address:</strong></td><td id="col-right">'+
+                                    stationArray[stationIndex].stAddress1+ '<br>'+
+                                    stationArray[stationIndex].stAddress2 + '<br>'+     
+                                    stationArray[stationIndex].city + '<br>' +
+                                    stationArray[stationIndex].postalCode + '</td></tr>';
+                    
+                    var statusKey = '<td id="col-right"><img src="img/bullet_green.png" style="vertical-align: middle"/> Active</td></tr>';
+                    
+                    if (stationArray[stationIndex].statusKey == 1) {
+                        statusKey = '<td id="col-right"><img src="img/bullet_green.png" style="vertical-align: middle"/> Active</td></tr>';
+                    }
+                    else {
+                         statusKey = '<td id="col-right"><img src="img/bullet_red.png" style="vertical-align: middle"/> Inactive</td></tr>';
+                    }
+  
+                                    
+                    var stationString = '<tr><td id="col-left"><strong>Status:<strong></td>'+ statusKey +
+                                        '<tr><td id="col-left"><strong>Available Docks:<strong></td>'+
+                                        '<td id="col-right">'+ stationArray[stationIndex].availableDocks +
+                                        '</td><tr><td id="col-left"><strong>Total Docks:<strong></td>'+
+                                        '<td id="col-right">' +  stationArray[stationIndex].totalDocks +
+                                        '</td><tr><td id="col-left"><strong>Available Bikes:<strong></td>'+
+                                        '<td id="col-right">' + stationArray[stationIndex].availableBikes + '</td></tr>'+
+                                        lot_address +
+                                        '<tr><td colspan="2" style="text-align: center">Last Connection Time:'+
+                                        stationArray[stationIndex].lastCommunicationTime+'</tr>';
+                    
+                    $("#stationInfo").html(stationString);                    
+                    $("#stationInfo").trigger("create");
+                    
+                });
+                
+
+        /****** GOOGLE MAPS CODE*****/     
+            $(document).on("pageshow", "#stationInfoPage",  function(){
+                                                                                    
+                var latitude = stationArray[stationIndex].latitude;
+                var longitude = stationArray[stationIndex].longitude;
+                var mapLocation = stationArray[stationIndex].stationName;
+                var bikesAvail = stationArray[stationIndex].availableBikes;
+                var bikeIcon = "img/bike-icon-null.png";
+          
+                if (bikesAvail > 5) {
+                    bikeIcon = "img/bike-icon-green.png";
+                }
+                else if (bikesAvail > 0 && bikesAvail <= 5) {
+                    bikeIcon = "img/bike-icon-yellow.png";
+                }
+                else if (bikesAvail === 0) {
+                    bikeIcon = "img/bike-icon-red.png";
+                }
+          
+                var myOptions = {
+                    center: new google.maps.LatLng(latitude, longitude),
+                    zoom: 17,
+                    mapTypeId: google.maps.MapTypeId.ROADMAP
+                };
+       
+             
+                var statIcon = '<img src="img/bullet_green.png" style="vertical-align: middle">';
+          
+                if (stationArray[stationIndex].statusKey === 0) {
+                    statIcon = '<img src="img/bullet_red.png" style="vertical-align: middle">';
+                }
+
+                var bike_info = new google.maps.InfoWindow({
+                    content: '<strong>'+mapLocation + '</strong>'+ statIcon +'<br><br>Bikes Available: ' + bikesAvail
+                });
+          
+          
+                var map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+    
+                var bikeMarker = new google.maps.Marker({
+                    position: new google.maps.LatLng(latitude, longitude),
+                    map: map,
+                    icon: bikeIcon,
+                    title:"bike"
+                });
+        
+           
+                //Event Listener for Click
+                google.maps.event.addListener(bikeMarker, 'click', function(){
+                    bike_info.open(map, bikeMarker);
+                });
+          
+           
+                google.maps.event.addListener(map, 'idle', function() {
+                    lastCenter=map.getCenter(); 
+                    google.maps.event.trigger(map_canvas, 'resize');
+                    map.setCenter(lastCenter);
+                    bike_info.open(map, bikeMarker);
+                });
+        
+            });
+        /****END GOOGLE MAPS CODE****/                 
+
+                
+    /*********** REPORTS PAGE *******************/
+                
+        function listReports(data) {            
+            stationArray = data.stationBeanList;
+            $("#reports-list").listview("refresh");
+        }
+                       
+        
+            /*** Page Transition: Report Page ***/       
+            $(document).on("vclick", "#all_locations", function() {
+                $.mobile.changePage("#reportPage", {transition: "flip", changeHash: false});
+            });
+
+           
+        $(document).on("pagebeforeshow", "#reportPage", function() {
+           
+            $("#reportInfo").empty();
+            $(" #currentStatus ").empty();
+            $("#currentRate").empty();
+            $("#reportInfo").append('<tr><th colspan="2">Station/Status</th><th>Docks</th><th>Avail. Docks</th><th>Avail. Bikes</th>');
+            
+            var totalBikes = 0;
+            var totalDocks = 0;
+            var statIcon = '<img src="img/bullet_green.png" style="vertical-align: middle">';
+            var reportString = "";
+            var currDate = new Date();
+            var cMonth= currDate.getMonth() +1;
+            var cDay = currDate.getDate();
+            var cYear = currDate.getFullYear();
+                
+              
+            $.each(stationArray, function(i, row){
+
+                    totalBikes += row.availableBikes;
+                    totalDocks += row.availableDocks; 
+                    statIcon = '<img src="img/bullet_green.png" style="vertical-align: middle">';
+                        
+                    if (row.statusKey === 0) {
+                        statIcon = '<img src="img/bullet_red.png" style="vertical-align: middle">';
+                    }
+    
+                    reportString += '<tr><td>'+ row.stationName+'</td><td width="20px">'+ statIcon +'</td><td>'+
+                                    row.totalDocks+'</td><td>'+
+                                    row.availableDocks+'</td><td>'+
+                                    row.availableBikes+'</td>';
+            
+                });
+            
+            var bikeCount = '<strong>Current Date: </strong>'+ cYear +'/'+cMonth+'/'+cDay+
+                            '<br><strong>Current Bike rate:</strong> '+ Math.round(totalBikes/totalDocks*100) + '%';
+            $("#currentRate").append(bikeCount);
+            $("#reportInfo").append(reportString);
+            $("#reportInfo").trigger("create");
+        });
+        
+      
+       
+    /****** END REPORTS PAGE *************************/       
+    
+             
+                
+    /******** HOME PAGE PIE CHART*************/
+        $.get('bikes.json', function(result) {
+            var data = $.parseJSON(result);
+            var bikeData = data.stationBeanList;
+            var i = 0;
+            var totalBikes = 0;
+            var totalDocks = 0;
+                
+            for(i = 0; i < bikeData.length; i++) {
+                totalBikes += bikeData[i].availableBikes;
+                totalDocks += bikeData[i].availableDocks;
+            }
+                
+            var dockPerc = totalBikes/totalDocks;
+            var degrees = dockPerc * 360.0;
+            var radians = degrees * (Math.PI / 180);      
+                
+            var canvas = document.getElementById('myCanvas');
+            var context = canvas.getContext('2d');
+            var centerX = canvas.width / 2;
+            var centerY = canvas.height / 2;                
+            var radius = (canvas.width - 20) / 2 ;
+
+            context.beginPath();
+            context.arc(centerX, centerY, radius, 0, radians , false);
+            context.lineWidth = 15;
+            context.strokeStyle = '#9CFF00';
+            context.stroke();
+            context.font = "4em sans-serif";
+            context.fillStyle = "#9CFF00";
+            context.fillText(totalBikes, centerX - 55, centerY + 25);
+            
+            var totalCustomers = totalDocks - totalBikes;
+            $("#custNumbers").html('<h1>'+ totalCustomers + ' customers are currently using BikeShare</h1>');
+        });    
+    /*************END PIE CHART************************/
+                
+        
+                
+    /***********GOOGLE ALL MAP *****************/
+                
+    $(document).on('pageshow', '#cityMap', function() {
+            
+        var bikeMapCentre = new google.maps.LatLng(43.631016,-79.540440);
+        var myOptions = {
+            center: bikeMapCentre,
+            zoom: 10,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        };
+       
+        var map2 = new google.maps.Map(document.getElementById("allmaps"), myOptions);
+        
+        for(var i = 0; i < stationArray.length; i++){
+            createMarker( stationArray[i].latitude, 
+                          stationArray[i].longitude, 
+                          stationArray[i].stationName, 
+                         stationArray[i].availableBikes, 
+                         map2);
+        }
+        
+        google.maps.event.trigger(map2, "resize");
+        
+        $("#cityMap").trigger('show');
+    });
+
+    var infowindow = null;
+    
+    //CREATE MARKER FUNCTION
+    function createMarker(lat, lng, title, bikeAvail, map2) {
+        var point = new google.maps.LatLng(lat,lng);
+        var marker2 = new google.maps.Marker({
+            position: point,
+            map: map2,
+            title: title
+        });
+        
+       
+        google.maps.event.addListener(marker2, 'click', function() {
+            if (infowindow) infowindow.close();
+            
+            infowindow = new google.maps.InfoWindow({
+                content: '<strong>'+title + '</strong><br>Bikes Available:' + bikeAvail
+            });
+            
+            infowindow.open(map2, marker2);
+        });
+
+       
+    }
+                
+                
+                /****************END GOOGLE ALL MAP *********************/
+                
+                          
+    /**** AJAX CALL ******/
+        $(function() {
+            $.ajax({ 
+                url: "bikes.json",
+                dataType: "json",
+                type: "GET",
+                success: listBikeStations,
+                error: function(){alert("Unable to access bikes.json");}
+            });
+        });
+    /*** END AJAX CALL *****/   
+              
+                
+                
+            </script>
+        
+    </html>
+    
+

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Closest Bikeshare Prototype</title>
+    <style>
+        /* style settings for Google map */
+
+        
+        #locate_map_canvas {
+            min-width: 290px;
+            max-width: 500px;
+            /* map width */
+            height: 400px;
+            /* map height */
+           margin-left: auto;
+            margin-right: auto;
+            display: block;
+        }
+        
+         #map-content {
+             min-width: 290px;
+            max-width: 500px;
+             margin-left: auto;
+            margin-right: auto;
+            display: block;
+             height: auto;
+         }
+        
+        
+    </style>
+</head>
+
+<body>
+     <div data-role="page" id="bikeStationList" class="ui-responsive-panel">
+                <div data-role="panel" data-position="left" data-position-fixed="true" data-display="overlay" id="nav-panel" data-theme="a">
+					<ul data-role="listview">
+						<li data-icon="delete">
+							<a href="#" data-rel="close">Close menu</a>
+						</li>
+                        <li data-icon="home">
+							<a href="index.html" data-ajax="false">Homepage</a>
+						</li>
+						<li data-filtertext="Locations">
+							<a href="index.html#bikeStationList" data-ajax="false">Locations</a>
+						</li>
+                        <li data-filtertext="Reports">
+							<a href="index.html#reportList" data-ajax="false" id="goToReport">Reports</a>
+						</li>
+                    </ul>
+                </div>
+
+                <div data-role="header" data-theme="b">
+                    <a href="#nav-panel" data-icon="bars" data-iconpos="notext">Menu</a> 
+                    <h1>Bike Share Location</h1>
+                </div>
+                 
+                
+                <div data-role="content">
+                    <div id="map-content">
+                        <h1>Your BikeShare<br>Locations</h1>
+                        <p>Here is your closest BikeShare Point.
+                        </p>
+                    </div> 
+                     <div id='locate_map_canvas'></div>
+                </div>
+                
+            </div>
+           
+            
+</body>
+    
+    
+    <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.css" />
+            <script src="http://code.jquery.com/jquery-1.11.1.min.js"></script>
+            <script src="http://code.jquery.com/mobile/1.4.5/jquery.mobile-1.4.5.min.js"></script>
+    <script type="text/javascript" src="http://maps.googleapis.com/maps/api/js?key=AIzaSyBtJzaYIwEGTgyiSOQW3u83cwiwhlzy78w&sensor=false">     </script>
+    <!-- Google Maps API -->
+    <script>
+
+           
+    var stationArray = new Array();   
+        
+         $.get('bikes.json', function(result) {
+            var data = $.parseJSON(result);
+            var bikeData = data.stationBeanList;
+            var mLongitute = "";
+            var mLatitude = "";
+            var mStationName ="";
+             for (var i=0; i < bikeData.length; i++) {
+              
+                 mLongitude = bikeData[i].longitude;
+                 mLatitude = bikeData[i].latitude;
+                 mStationName = bikeData[i].stationName;
+                 
+                 stationArray.push(
+                     {
+                         "longitude": mLongitude,
+                         "latitude":mLatitude,
+                         "stationName":mStationName
+                     }
+                 );
+           }
+      
+         });
+         
+        
+        
+        var map; // Google map object
+
+        // Initialize and display a google map
+        function Init() {
+            // HTML5/W3C Geolocation
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(UserLocation, errorCallback, {
+                    maximumAge: 60000,
+                    timeout: 10000
+                });
+            } else
+                alert("Error obtaining closest location");
+        }
+
+        function errorCallback(error) {
+            alert("An error occurred");
+        }
+
+        // Callback function for asynchronous call to HTML5 geolocation
+        function UserLocation(position) {
+            ClosestLocation((position.coords.latitude),(position.coords.longitude), "This is my Location");
+        }
+
+        // Display a map centered at the nearest location with a marker and InfoWindow.
+        function ClosestLocation(latitude, longitude, title) {
+            // Create a Google coordinate object for where to center the map
+            var latlng = new google.maps.LatLng(latitude, longitude);
+
+            // Map options for how to display the Google map
+            var mapOptions = {
+                zoom: 12,
+                center: latlng
+            };
+
+            // Show the Google map in the div with the attribute id 'locate_map_canvas'.
+            map = new google.maps.Map(document.getElementById('locate_map_canvas'), mapOptions);
+
+            // find the closest location to the user's location
+            var closest = 0;
+            var mindist = 99999;
+
+            // var stationArray = null;
+          //  var stationIndex = 0;
+            
+            
+            for (var i = 0; i < stationArray.length; i++) {
+                // get the distance between user's location and this point
+                var dist = Haversine(stationArray[i]["latitude"], stationArray[i]["longitude"], latitude, longitude);
+
+                // check if this is the shortest distance so far
+                if (dist < mindist) {
+                    closest = i;
+                    mindist = dist;
+                }
+            }
+            
+       
+            
+           
+            var marker = new google.maps.Marker({
+                position: latlng,
+                map: map,
+                title: "My location marker",
+                icon: "img/userIcon.png"
+                
+            });
+            
+            
+            
+            // Create an InfoWindow for the user location marker 
+            var contentStringMyLoc = "You are here!"; // HTML text to display in the InfoWindow
+            var infowindownew = new google.maps.InfoWindow({
+                content: contentStringMyLoc
+            });
+
+            // Set event to display the InfoWindow anchored to the marker when the marker is clicked.
+            google.maps.event.addListener(marker, 'click', function() {
+                infowindownew.open(map, marker);
+            });
+
+            // Create a Google coordinate object for the closest location
+            var latlng = new google.maps.LatLng(stationArray[closest]["latitude"], stationArray[closest]["longitude"]);
+
+            // Place a Google Marker at the closest location as the map center 
+            // When you hover over the marker, it will display the title
+            var marker2 = new google.maps.Marker({
+                position: latlng,
+                map: map,
+                title: "Closest Location: " + stationArray[closest].stationName + "Distance is: " + mindist + " km"
+            });
+
+            // Create an InfoWindow for the marker of closest bike share
+            var contentStringClosest = "Closest Location: " + stationArray[closest]["stationName"] + "</br>" + "Distance is: " + mindist + " km";
+
+            // HTML text to display in the InfoWindow for closest bike share
+            var infowindow = new google.maps.InfoWindow({
+                content: contentStringClosest
+            });
+
+
+
+            // Set event to display the InfoWindow anchored to the marker when the marker is clicked.
+            google.maps.event.addListener(marker2, 'click', function() {
+                infowindow.open(map, marker2);
+            });
+
+
+            map.setCenter(latlng);
+
+        }
+
+        // Convert Degress to Radians
+        function Deg2Rad(deg) {
+            return deg * Math.PI / 180;
+        }
+
+        // Get Distance between two lat/lng points using the Haversine function
+        // First published by Roger Sinnott in Sky & Telescope magazine in 1984 (“Virtues of the Haversine”)
+    
+        function Haversine(lat1, lon1, lat2, lon2) {
+            var R = 6372.8; // Earth Radius in Kilometers
+
+            var dLat = Deg2Rad(lat2 - lat1);
+            var dLon = Deg2Rad(lon2 - lon1);
+
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Deg2Rad(lat1)) * Math.cos(Deg2Rad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var d = R * c;
+
+            // Return Distance in Kilometers
+            return d;
+        }
+
+        // Call the method 'Init()' to display the google map when the web page is displayed ( load event )
+        google.maps.event.addDomListener(window, 'load', Init);
+    </script>
+
+</html>
+
